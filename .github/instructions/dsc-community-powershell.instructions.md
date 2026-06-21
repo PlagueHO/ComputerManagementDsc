@@ -242,3 +242,86 @@ if ($Force.IsPresent -and -not $Confirm)
 ## Module Manifest
 
 - Don't use `NestedModules` for shared commands without `RootModule`
+
+## Closing Brace Comments
+
+In complex functions or long script blocks, add a trailing comment on the closing brace to
+identify the construct it closes:
+
+```powershell
+} # function Get-TargetResource
+} # if ($Ensure -eq 'Present')
+} # try
+} # foreach ($item in $collection)
+```
+
+## Hashtable and Splatting Alignment
+
+When assigning multiple properties to a hashtable or building a splatting block, align the
+`=` operators in a column for readability:
+
+```powershell
+$returnValue = @{
+    Name            = $repository.Name
+    SourceLocation  = $repository.SourceLocation
+    PublishLocation = $repository.PublishLocation
+    Ensure          = 'Present'
+}
+```
+
+## Class-Level Comment-Based Help
+
+For PowerShell class files, place comment-based help **above** the class declaration (and
+any attributes) using `.SYNOPSIS`, one `.PARAMETER` entry per significant property, and
+at least one `.EXAMPLE`:
+
+```powershell
+<#
+    .SYNOPSIS
+        A class to manage...
+
+    .PARAMETER Name
+        Specifies the name.
+
+    .EXAMPLE
+        [MyClass]::new('Value')
+#>
+[DscResource()]
+class MyClass { ... }
+```
+
+## Private Function Exemptions
+
+Private (unexported) helper functions do not require the full comment-based help set
+(`[CmdletBinding()]`, `[OutputType()]`, `.DESCRIPTION`, `.INPUTS`, `.OUTPUTS`, `.EXAMPLE`
+are optional). They require at minimum a `.SYNOPSIS` line.
+
+## `[SuppressMessageAttribute]` Usage
+
+When a PSScriptAnalyzer rule must be suppressed (e.g., `PSAvoidGlobalVars` for
+`$global:DSCMachineStatus`, or `PSUseDeclaredVarsMoreThanAssignments` for Pester blocks),
+add the attribute with a justification comment at the top of the file before `param ()`:
+
+```powershell
+# Justification comment describing why the rule is suppressed.
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
+param ()
+```
+
+## DSC Resource Module Import Boilerplate
+
+At the top of every MOF resource `.psm1`, import helper modules before loading localized
+data (adjust relative path depth as needed):
+
+```powershell
+$modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) `
+    -ChildPath 'Modules'
+
+Import-Module -Name (Join-Path -Path $modulePath `
+    -ChildPath (Join-Path -Path 'ComputerManagementDsc.Common' `
+        -ChildPath 'ComputerManagementDsc.Common.psm1'))
+
+Import-Module -Name (Join-Path -Path $modulePath -ChildPath 'DscResource.Common')
+
+$script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
+```

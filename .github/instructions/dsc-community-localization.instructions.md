@@ -44,3 +44,55 @@ ConvertFrom-StringData @'
 ```powershell
 Write-Verbose -Message ($script:localizedData.KeyName -f $value1)
 ```
+
+## Loading Mechanism by Resource Type
+
+### MOF-based resources
+
+At module scope, after importing `DscResource.Common`:
+
+```powershell
+$script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
+```
+
+Access strings as `$script:localizedData.KeyName`.
+
+### Class-based resources
+
+Pass `$PSScriptRoot` to the `ResourceBase` base constructor in the class constructor:
+
+```powershell
+MyResourceName () : base ($PSScriptRoot)
+{
+    ...
+}
+```
+
+The `ResourceBase` class loads the strings automatically.
+Access strings as `$this.localizedData.KeyName` — **not** `$script:localizedData`:
+
+```powershell
+Write-Verbose -Message ($this.localizedData.GetTargetResourceMessage -f $this.Name)
+```
+
+## Error Messages
+
+Pass localized error strings to `DscResource.Common` exception helpers rather than calling
+`$PSCmdlet.ThrowTerminatingError()` directly:
+
+```powershell
+$errorMessage = $script:localizedData.SomeErrorKey -f $value
+New-InvalidOperationException -Message $errorMessage
+New-ArgumentException -ArgumentName 'ParameterName' -Message $errorMessage
+```
+
+## String File Header
+
+Optionally include `# culture="en-US"` as the first line of a `.strings.psd1` file:
+
+```powershell
+# culture="en-US"
+ConvertFrom-StringData -StringData @'
+    KeyName = Message text. (PREFIX0001)
+'@
+```

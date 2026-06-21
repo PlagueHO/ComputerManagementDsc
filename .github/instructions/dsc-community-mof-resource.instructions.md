@@ -58,3 +58,93 @@ version: 1.0.0
 
 - In `.strings.psd1` files, use underscores as word separators in localized string key
   names (for multi-word keys)
+
+## Function Requirements
+
+- All three functions must include `[CmdletBinding()]`
+- `Get-TargetResource` must declare `[OutputType([System.Collections.Hashtable])]`
+- `Test-TargetResource` must declare `[OutputType([System.Boolean])]`
+- `Set-TargetResource` omits `[OutputType()]`
+
+## Module Import Boilerplate
+
+At the top of every `.psm1`, import the required helper modules before loading localized data:
+
+```powershell
+$modulePath = Join-Path -Path (Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent) `
+    -ChildPath 'Modules'
+
+Import-Module -Name (Join-Path -Path $modulePath `
+    -ChildPath (Join-Path -Path 'ComputerManagementDsc.Common' `
+        -ChildPath 'ComputerManagementDsc.Common.psm1'))
+
+Import-Module -Name (Join-Path -Path $modulePath -ChildPath 'DscResource.Common')
+
+$script:localizedData = Get-LocalizedData -DefaultUICulture 'en-US'
+```
+
+## Script-Scoped Module Variables
+
+Define constants and shared lookup tables at module scope using `$script:` prefix:
+
+```powershell
+$script:registryKey = 'HKLM:\SOFTWARE\...'
+$script:parameterNames = @('Param1', 'Param2')
+```
+
+## Reboot Signalling (`$global:DSCMachineStatus`)
+
+When a resource must signal that a reboot is required, use the pattern below. Include a
+`SuppressRestart` parameter to allow callers to suppress the reboot signal.
+Suppress the PSScriptAnalyzer warning at module top:
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '',
+    Justification = 'DSC requires $global:DSCMachineStatus to signal a reboot.')]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification = 'Script Analyzer does not understand Pester syntax.')]
+param ()
+
+# ...inside Set-TargetResource:
+if (-not $SuppressRestart)
+{
+    $global:DSCMachineStatus = 1
+}
+```
+
+## Private Helper Functions
+
+Resource-specific helper functions may be defined in the `.psm1` file below the three
+required functions. Extract logic to `ComputerManagementDsc.Common` only when it is
+needed by multiple resources.
+
+## Preferred Comparison Helper
+
+Use `Test-DscParameterState` from `DscResource.Common` as the preferred mechanism for
+comparing current vs. desired state in `Test-TargetResource`.
+
+## Mutual Exclusivity Validation
+
+Use `Assert-BoundParameter` from `DscResource.Common` to validate mutually exclusive
+parameter combinations in `Set-TargetResource` and `Test-TargetResource`.
+
+## Schema (.schema.mof) Structure
+
+Every MOF resource requires a `.schema.mof` file in the same directory:
+
+- Declare `ClassVersion` and `FriendlyName` in the class qualifier line
+- Inherit from `OMI_BaseResource`
+- Qualifier types:
+  - `[Key]` — key (identity) property
+  - `[Required]` — mandatory input property
+  - `[Write]` — optional input property
+  - `[Read]` — output-only / computed property
+
+```mof
+[ClassVersion("1.0.0"), FriendlyName("TimeZone")]
+class DSC_TimeZone : OMI_BaseResource
+{
+    [Key, Description("Specifies the resource is a single instance.")] String IsSingleInstance;
+    [Required, Description("The desired time zone.")] String TimeZone;
+};
+```

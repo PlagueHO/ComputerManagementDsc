@@ -100,3 +100,69 @@ Add to `.DESCRIPTION` section:
   - [`New-ObjectNotFoundException`](https://github.com/dsccommunity/DscResource.Common/wiki/New%E2%80%91ObjectNotFoundException)
   - [`New-InvalidResultException`](https://github.com/dsccommunity/DscResource.Common/wiki/New%E2%80%91InvalidResultException)
   - [`New-NotImplementedException`](https://github.com/dsccommunity/DscResource.Common/wiki/New%E2%80%91NotImplementedException)
+
+## Property Attributes
+
+- `[DscProperty(Key)]` — key (identity) properties; always mark at least one per resource
+- `[DscProperty(Mandatory)]` — required (non-key) properties
+- `[DscProperty()]` — optional properties
+- `[DscProperty(NotConfigurable)]` — read-only / computed properties not configurable by the
+  user (e.g. `Reasons`)
+- `[ValidateSet('Value1', 'Value2')]` — restrict allowed values on string properties
+- For Enum-typed properties, set a default value:
+
+  ```powershell
+  [DscProperty()]
+  [Ensure]
+  $Ensure = [Ensure]::Present
+  ```
+
+## Machine Configuration Compliance (`Reasons`)
+
+Resources that support Azure Policy / Machine Configuration compliance auditing must include
+a `Reasons` property using the `CMReason` helper class:
+
+```powershell
+[DscProperty(NotConfigurable)]
+[CMReason[]]
+$Reasons
+```
+
+## Class-Level Comment-Based Help
+
+Place a comment block **above** the `[DscResource()]` decoration with:
+
+- `.SYNOPSIS` — one-line description of the resource
+- `.PARAMETER` — one entry per DSC property (name + description)
+- `.EXAMPLE` — at least one `Invoke-DscResource` usage example
+
+```powershell
+<#
+    .SYNOPSIS
+        A resource to manage...
+
+    .PARAMETER Ensure
+        Specifies whether the resource should be Present or Absent.
+
+    .PARAMETER Name
+        Specifies the name.
+
+    .EXAMPLE
+        Invoke-DscResource -Name 'MyResource' -ModuleName 'MyModule' -Method 'Get' -Property @{
+            Name   = 'Value'
+            Ensure = 'Present'
+        }
+#>
+[DscResource()]
+class MyResource : ResourceBase
+```
+
+## Localized Data in Class Resources
+
+- Strings are loaded automatically by `ResourceBase` when passing `$PSScriptRoot` to the
+  base constructor: `MyResource () : base ($PSScriptRoot)`
+- Access localized strings via `$this.localizedData.KeyName` (not `$script:localizedData`)
+
+  ```powershell
+  Write-Verbose -Message ($this.localizedData.GetTargetResourceMessage -f $this.Name)
+  ```

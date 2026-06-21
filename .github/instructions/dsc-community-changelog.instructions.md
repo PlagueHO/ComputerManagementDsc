@@ -14,3 +14,14 @@ version: 1.0.0
 - No empty lines between list items in same section
 - Skip adding entry if same change already exists in Unreleased section
 - No duplicate sections or items in Unreleased section
+- Issue reference format: `Fixes [Issue #<N>](https://github.com/dsccommunity/ComputerManagementDsc/issues/<N>).`
+  — capital `I` in `Issue`, `Fixes` keyword prefix, full stop after the closing parenthesis
+- Mark breaking changes with `BREAKING CHANGE:` prefix on the entry in `### Changed`
+  or `### Fixed`
+- Group multiple changes for the same resource using two-level indentation:
+
+  ```markdown
+  - ResourceName
+    - First change description for this resource
+    - Second change description for this resource
+  ```
