@@ -36,7 +36,8 @@ This repository contains two types of DSC resources:
   `Get-TargetResource`, `Test-TargetResource`, and `Set-TargetResource`
 - **Class-based resources** (`source/Classes/<N>.<ClassName>.ps1`) — inherit `ResourceBase`
   from `DscResource.Base`; implement `GetCurrentState()` and `Modify()`
-- Prefer class-based resources; use MOF-based only when required.
+- Prefer class-based resources; use MOF-based only when required
+  (e.g. WMF 4.0 support).
 
 ## File Organization
 
@@ -47,14 +48,36 @@ This repository contains two types of DSC resources:
 - Unit tests (class): `tests/Unit/Classes/<ClassName>.Tests.ps1`
 - Integration tests: `tests/Integration/<ResourceName>.Integration.Tests.ps1`
 
+## Naming Conventions
+
+- MOF-based resources: `DSC_<ResourceName>` prefix on all files and all exported
+  functions (e.g. `DSC_TimeZone.psm1`; `Get-TargetResource` is exported via
+  `*-TargetResource`).
+- Class-based resources: PascalCase class name; file prefix
+  `<DependencyGroupNumber>.<ClassName>.ps1` where the number is the dependency
+  group (e.g. `020.PSResourceRepository.ps1`).
+
+## Build & Test Workflow
+
+- Never use VS Code tasks; always use PowerShell scripts via terminal from the
+  repository root.
+- Setup build and test environment (once per `pwsh` session):
+  `./build.ps1 -Tasks noop`
+- Build project before running tests: `./build.ps1 -Tasks build`
+- Run all unit tests: `Invoke-Pester -Path 'tests/Unit' -Output Detailed`
+- Run a specific MOF resource unit test:
+  `Invoke-Pester -Path 'tests/Unit/DSC_<ResourceName>.Tests.ps1' -Output Detailed`
+- Run a specific class resource unit test:
+  `Invoke-Pester -Path 'tests/Unit/Classes/<ClassName>.Tests.ps1' -Output Detailed`
+- Never run integration tests locally.
+- Run unit tests in a new `pwsh` session after changing class-based resources.
+
 ## Instruction Files
 
 Read the following instruction files before working on the corresponding areas:
 
-- `.github/instructions/ComputerManagementDsc-guidelines.instructions.md` — build/test
-  workflow and naming conventions
 - `.github/instructions/dsc-community-powershell.instructions.md` — PowerShell style
-- `.github/instructions/dsc-community-pester-4.instructions.md` — Pester test style
+- `.github/instructions/dsc-community-pester.instructions.md` — Pester test style
 - `.github/instructions/dsc-community-unit-tests.instructions.md` — unit test setup and patterns
 - `.github/instructions/dsc-community-integration-tests.instructions.md` — integration test patterns
 - `.github/instructions/dsc-community-mof-resource.instructions.md` — MOF resource implementation
