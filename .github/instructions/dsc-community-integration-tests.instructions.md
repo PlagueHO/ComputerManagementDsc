@@ -1,13 +1,13 @@
 ---
-description: Guidelines for implementing integration tests for commands.
-applyTo: "tests/[iI]ntegration/**/*.[iI]ntegration.[tT]ests.ps1"
+description: Guidelines for implementing integration tests.
+applyTo: "tests/[iI]ntegration/**/*.[Tt]ests.ps1"
 ---
 
 # Integration Tests Guidelines
 
 ## Requirements
-- Location Commands: `tests/Integration/Commands/{CommandName}.Integration.Tests.ps1`
-- Location Resources: `tests/Integration/Resources/{ResourceName}.Integration.Tests.ps1`
+- Location (MOF resources): `tests/Integration/DSC_<ResourceName>*.Tests.ps1` (plus a companion `.config.ps1`)
+- Location (class resources): `tests/Integration/Classes/<ClassName>*.Tests.ps1`
 - No mocking - real environment only
 - Cover all scenarios and code paths
 - Use `Get-ComputerName` for computer names in CI

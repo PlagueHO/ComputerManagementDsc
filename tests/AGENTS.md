@@ -23,8 +23,7 @@ All Pester keywords (`Describe`, `Context`, `It`, `BeforeAll`, `AfterAll`, `Befo
 |------|----------|
 | MOF resource unit tests | `tests/Unit/DSC_<ResourceName>.Tests.ps1` |
 | Class resource unit tests | `tests/Unit/Classes/<ClassName>.Tests.ps1` |
-| Integration tests | `tests/Integration/` (one `.config.ps1` + one `.Integration.Tests.ps1` per resource) |
-
+| Integration tests | `tests/Integration/` (MOF: one `.config.ps1` + one `*.Tests.ps1`; class-based: `tests/Integration/Classes/`) |
 ## Required Setup Block
 
 ### MOF Resource Unit Test
@@ -41,8 +40,7 @@ BeforeDiscovery {
         {
             # Assumes dependencies have been resolved, so if this module is not available, run 'noop' task.
             if (-not (Get-Module -Name 'DscResource.Test' -ListAvailable))
-            {
-                # Redirect all streams to $null, except the error stream (stream 2)
+                # Redirect all streams to $null
                 & "$PSScriptRoot/../../build.ps1" -Tasks 'noop' 2>&1 4>&1 5>&1 6>&1 > $null
             }
 

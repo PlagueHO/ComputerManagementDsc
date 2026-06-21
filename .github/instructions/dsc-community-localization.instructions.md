@@ -1,6 +1,6 @@
 ---
 description: Guidelines for implementing localization.
-applyTo: "source/**/*.ps1"
+applyTo: "source/**/*.{ps1,psm1}"
 version: 1.0.0
 ---
 

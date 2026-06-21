@@ -41,7 +41,6 @@ applyTo: "**/*.[Tt]ests.ps1"
 - PascalCase: `Describe`, `Context`, `It`, `Should`, `BeforeAll`, `BeforeEach`, `AfterAll`, `AfterEach`
 - Use `-BeTrue`/`-BeFalse` never `-Be $true`/`-Be $false`/`-Contain $true`/`-Contain $false`
 - Never use `Assert-MockCalled`, use `Should -Invoke` instead
-- No `Should -Not -Throw` - invoke commands directly
 - Never add an empty `-MockWith` block
 - Omit `-MockWith` when returning `$null`
 - Set `$PSDefaultParameterValues` for `Mock:ModuleName`, `Should:ModuleName`, `InModuleScope:ModuleName`
@@ -53,9 +52,9 @@ applyTo: "**/*.[Tt]ests.ps1"
   - Assert <n> calls inside the `It` block; do not assert call counts across an entire `Describe` or `Context`
 
 ## File Organization
-- Class resources: `tests/Unit/Classes/{Name}.Tests.ps1`
-- Public commands: `tests/Unit/Public/{Name}.Tests.ps1`
-- Private functions: `tests/Unit/Private/{Name}.Tests.ps1`
+- MOF resources: `tests/Unit/DSC_{ResourceName}.Tests.ps1`
+- Class resources: `tests/Unit/Classes/{ClassName}.Tests.ps1`
+- Common module tests: `tests/Unit/ComputerManagementDsc.Common.Tests.ps1`
 
 ## Data-Driven Tests (Test Cases)
 - Define `-ForEach` variables in separate `BeforeDiscovery` (close to usage)

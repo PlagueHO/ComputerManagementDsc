@@ -46,8 +46,7 @@ This repository contains two types of DSC resources:
 - Resource enums: `source/Enum/<DependencyGroupNumber>.<EnumName>.ps1`
 - Unit tests (MOF): `tests/Unit/DSC_<ResourceName>.Tests.ps1`
 - Unit tests (class): `tests/Unit/Classes/<ClassName>.Tests.ps1`
-- Integration tests: `tests/Integration/<ResourceName>.Integration.Tests.ps1`
-
+- Integration tests: `tests/Integration/*.Tests.ps1` (class resources in `tests/Integration/Classes/`)
 ## Naming Conventions
 
 - MOF-based resources: `DSC_<ResourceName>` prefix on all files and all exported
